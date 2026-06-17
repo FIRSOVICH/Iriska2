@@ -1,0 +1,33 @@
+app = "iriska-server"
+primary_region = "ams"   # Amsterdam — ближайший к России
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT       = "4000"
+  NODE_ENV   = "production"
+  UPLOADS_DIR = "/data/uploads"
+  MAX_FILE_SIZE_MB = "50"
+
+# Постоянный диск для загружаемых файлов
+[mounts]
+  source      = "iriska_uploads"
+  destination = "/data/uploads"
+
+[http_service]
+  internal_port       = 4000
+  force_https         = true
+  auto_stop_machines  = false   # НЕ засыпаем!
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type       = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+[[vm]]
+  memory   = "256mb"
+  cpu_kind = "shared"
+  cpus     = 1

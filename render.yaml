@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: iriska-server
+    runtime: node
+    region: frankfurt    # ближайший к России
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node dist/db/migrate_runner.js && node dist/index.js
+    healthCheckPath: /health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000        # Render использует порт 10000
+      - key: UPLOADS_DIR
+        value: /opt/render/project/src/uploads
+      - key: MAX_FILE_SIZE_MB
+        value: 25           # Меньше на free tier (мало RAM)
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+
+      # Заполнить после создания БД на Neon.tech:
+      - key: DATABASE_URL
+        sync: false
+
+      # JWT секреты — генерировать: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+      # Домен фронтенда на Vercel (заполнить после деплоя)
+      - key: ALLOWED_ORIGINS
+        value: https://iriska.vercel.app
+
+      # Redis необязателен — без него работает in-memory
+      # - key: REDIS_URL
+      #   value: rediss://...
